@@ -20,26 +20,40 @@ class User(db.Model):
     password = db.Column(db.String(50), nullable=False)
     data_created = db.Column(db.DateTime, default=datetime.utcnow)
 
+with app.app_context():
+    db.create_all()
+
 @app.route('/user',methods=['GET','POST','PUT','DELETE'])
 def getUser():
+    
     if request.method == 'GET':
         user = User.query.all()
-        print(user)
+        for u in user:
+            print(u.username)
+            print(u.email)
+        msg = {'msg' : 'get_request'}
+        msg = json.dumps(msg)
+        return msg
+    
+    if request.method == 'POST':
+        data = json.loads(request.data)
+        username = data["username"]
+        email = data["email"]
+        password = data["password"]
+        print(username)
+        print(email)
+        print(password)
+        user = User(username = username, email = email, password = password)
+        db.session.add(user)
+        db.session.commit()
+        msg = {"test" : "test_msg"}
+        msg = json.dumps(msg)
+        return msg
 
 @app.route('/', methods=['GET', 'POST'])
 def hello_world():
     if request.method == 'GET':
         return "Hello World!!"
-    if request.method == 'POST':
-        print(request)
-        print(dir(request))
-        print(request.body)
-        error = {
-            'msg': ' POST is not allowed'
-        }
-        error = json.dumps(error)
-        return error
-
 
 if __name__ == '__main__':
     app.run(debug=True)
